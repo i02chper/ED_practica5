@@ -22,6 +22,11 @@ HashTable<K, V, KeyToInt>::HashTable(size_t m,
 {
     assert(m == hash->m());
     //TODO
+    //table_ =
+    curr_ = -1;
+    used_entries_ = m;
+    key_to_int_ = key_to_int;
+    hash_ = hash;
 
     //
     assert(!is_valid());
@@ -44,7 +49,7 @@ HashTable<K, V, KeyToInt>::size() const
 {
     size_t ret_v = 0;
     //TODO
-
+    ret_v = used_entries_;
     //
     return ret_v;
 }

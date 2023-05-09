@@ -22,8 +22,9 @@ uniform()
     double ret_v = 0.0;
     //TODO
     //Hint: Use std::uniform_real_distribution<double>
-    //Remember use Generator as random bit generator.    
-   
+    //Remember use Generator as random bit generator.       
+    std::uniform_real_distribution<double> distribution(0.0, 1.0);  // Crear una distribución uniforme en el intervalo [0, 1)
+    ret_v = distribution(Generator);  // Generar un número aleatorio
     //
     assert(0.0l<=ret_v && ret_v<1.0l);
     return ret_v;
@@ -37,7 +38,8 @@ pick_at_random(std::uint64_t const& a, std::uint64_t const& b)
     std::uint64_t ret_v = 0;
     //TODO
     //Hint: Use std::uniform_int_distribution<std::uint64_t>
-
+    std::uniform_int_distribution<std::uint64_t> distribution(a, b);  // Crear una distribución uniforme en el intervalo [a, b]
+    ret_v = distribution(Generator);  // Generar un número entero aleatorio
     //
     assert(a<=ret_v && ret_v<=b);
     return  ret_v;
@@ -163,7 +165,7 @@ UHash::b() const
 {
     size_t ret_v = 0;
     // TODO
-
+    ret_v= b_;
     //
     return ret_v;
 }
@@ -214,7 +216,13 @@ LPHash::operator()(uint64_t k, size_t iter) const
     //         regarding the collision algorithm.
     //Hint: you could save the first value in a static variable to avoid recompute it when
     //      a collision happened.
-
+    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
+    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
+        ret_v = hash_value;
+    } else { // en caso contrario, utilizar la técnica de sonda lineal
+            size_t next_location = (hash_value + iter) % m(); // calcular la siguiente ubicación
+            ret_v = next_location;
+    }
     //
     return ret_v;
 }
@@ -265,6 +273,13 @@ QPHash::operator()(std::uint64_t k, size_t iter) const
     //      a collision happened.
     //Remember: m is two power and c1= c2 = 1/2.
 
+    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
+    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
+        ret_v = hash_value;
+    } else { // en caso contrario, utilizar la técnica de sonda lineal
+            size_t next_location = static_cast<size_t>(std::floor(hash_value + 0.5*iter + 0.5*iter*iter)) % m(); // calcular la siguiente ubicación
+            ret_v = next_location;
+    }
     //
     return ret_v;
 }
@@ -315,7 +330,18 @@ RPHash::operator()(std::uint64_t k, size_t iter) const
     //         regarding the collision algorithm.
     // Hint: you could save the first value to avoid recompute it when
     //      a collision happened.    
-
+    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
+    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
+        ret_v = hash_value;
+    } else { // en caso contrario, utilizar la técnica de sonda lineal
+            size_t antiguoH = hash_value;
+            for(size_t i = 0; i<iter-1;i++)
+            {
+                antiguoH= (antiguoH + c_)% m();
+            }
+            size_t next_location = (antiguoH + c_) % m(); // calcular la siguiente ubicación
+            ret_v = next_location;
+    }
 
     //
     return ret_v;
@@ -373,7 +399,14 @@ DHash::operator()(std::uint64_t k, size_t iter) const
     //Remember: if iter == 0 (first attempt), compute the hash value using hash1.
     //         iter>0 means a collision happened so get the next proper value
     //         using a second hash from hash2 function.
-    
+    static size_t hash_value = hash1_->operator()(k); // calcula el valor de dispersión
+    static size_t hash_value2 = hash2_->operator()(k);
+    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
+        ret_v = hash_value;
+    } else { // en caso contrario, utilizar la técnica de sonda lineal
+            size_t next_location = (hash_value + iter*hash_value2) % m(); // calcular la siguiente ubicación
+            ret_v = next_location;
+    }
     
     //
     return ret_v;

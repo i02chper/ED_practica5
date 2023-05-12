@@ -1,4 +1,3 @@
-
 /**
  * @file hash_table.hpp
  *

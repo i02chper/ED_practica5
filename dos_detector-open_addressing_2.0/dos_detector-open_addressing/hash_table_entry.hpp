@@ -119,9 +119,8 @@ protected:
     //      (note that the the load factor < 0.5, so half table could be in an
     //      empty state during most time).
     //      @see https://en.cppreference.com/w/cpp/memory/unique_ptr
-    std::unique_ptr<std::pair<K,V>> data;
+    std::pair<K,V> data;
     EntryState state;
-
     //
 };
 

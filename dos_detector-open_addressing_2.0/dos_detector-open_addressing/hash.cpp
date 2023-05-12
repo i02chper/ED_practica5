@@ -56,8 +56,8 @@ UHash::UHash(size_t M, std::uint64_t P)
     // TODO
     m_ = M;
     p_ = P;
-    a_ = pick_at_random(std::uint64_t(1), p_-1);
-    b_ = pick_at_random(std::uint64_t(0), p_-1);
+    a_ = pick_at_random(1, P - 1);
+    b_ = pick_at_random(0, P - 1);
     //
     assert(M==m());
     assert(P==p());
@@ -102,7 +102,7 @@ UHash::Ref UHash::pick_at_new(std::uint64_t const& new_m) const
     assert(new_m < p());
     UHash::Ref new_f;
     // TODO
-    new_f = UHash::create(new_m, p());
+    new_f = std::make_shared<UHash>(new_m,p());
     //
     assert (new_f->m() == new_m);
     assert (new_f->p() == p());
@@ -117,7 +117,9 @@ UHash::operator()(std::uint64_t k) const
     size_t hash = 0;
     // TODO
     // Hint: use static_cast to static type conversions.
-    hash = static_cast<size_t>(((k*a_ + b_) % p_) % m_);
+    //hash = static_cast<size_t>(((k*a_ + b_) % p_) % m_);
+
+    hash=((a_ * k + b_)%p_) % m_;
     //
     assert(hash<m());
     return hash;
@@ -216,12 +218,16 @@ LPHash::operator()(uint64_t k, size_t iter) const
     //         regarding the collision algorithm.
     //Hint: you could save the first value in a static variable to avoid recompute it when
     //      a collision happened.
-    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
-    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
-        ret_v = hash_value;
-    } else { // en caso contrario, utilizar la técnica de sonda lineal
-            size_t next_location = (hash_value + iter) % m(); // calcular la siguiente ubicación
-            ret_v = next_location;
+    static size_t hash_value; // calcula el valor de dispersión
+    if (iter==0){
+        hash_value = hash_f_->operator()(k) % m();
+        return hash_value;
+
+    }
+    else{
+        ret_v = (hash_f_->operator()(k) + iter) % m();
+
+
     }
     //
     return ret_v;
@@ -273,13 +279,10 @@ QPHash::operator()(std::uint64_t k, size_t iter) const
     //      a collision happened.
     //Remember: m is two power and c1= c2 = 1/2.
 
-    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
-    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
-        ret_v = hash_value;
-    } else { // en caso contrario, utilizar la técnica de sonda lineal
-            size_t next_location = static_cast<size_t>(std::floor(hash_value + 0.5*iter + 0.5*iter*iter)) % m(); // calcular la siguiente ubicación
-            ret_v = next_location;
-    }
+    size_t hash_value = hash_f_->operator()(k);
+    ret_v = (hash_value + (iter * (iter + 1)) / 2) % m();
+
+    return ret_v;
     //
     return ret_v;
 }
@@ -330,18 +333,8 @@ RPHash::operator()(std::uint64_t k, size_t iter) const
     //         regarding the collision algorithm.
     // Hint: you could save the first value to avoid recompute it when
     //      a collision happened.    
-    static size_t hash_value = hash_f_->operator()(k); // calcula el valor de dispersión
-    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
-        ret_v = hash_value;
-    } else { // en caso contrario, utilizar la técnica de sonda lineal
-            size_t antiguoH = hash_value;
-            for(size_t i = 0; i<iter-1;i++)
-            {
-                antiguoH= (antiguoH + c_)% m();
-            }
-            size_t next_location = (antiguoH + c_) % m(); // calcular la siguiente ubicación
-            ret_v = next_location;
-    }
+    size_t hash_value = hash_f_->operator()(k);
+    ret_v = (hash_value + c_ * iter) % m();
 
     //
     return ret_v;
@@ -399,14 +392,9 @@ DHash::operator()(std::uint64_t k, size_t iter) const
     //Remember: if iter == 0 (first attempt), compute the hash value using hash1.
     //         iter>0 means a collision happened so get the next proper value
     //         using a second hash from hash2 function.
-    static size_t hash_value = hash1_->operator()(k); // calcula el valor de dispersión
-    static size_t hash_value2 = hash2_->operator()(k);
-    if (iter == 0) { // si es el primer intento, devolver el valor de dispersión
-        ret_v = hash_value;
-    } else { // en caso contrario, utilizar la técnica de sonda lineal
-            size_t next_location = (hash_value + iter*hash_value2) % m(); // calcular la siguiente ubicación
-            ret_v = next_location;
-    }
+    size_t hash_value1 = hash1_->operator()(k);
+    size_t hash_value2 = hash2_->operator()(k);
+    ret_v = (hash_value1 + iter * hash_value2) % m();
     
     //
     return ret_v;

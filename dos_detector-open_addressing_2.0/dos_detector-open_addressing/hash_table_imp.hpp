@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file hash_table_imp.hpp
  *
  * CopyRight F. J. Madrid-Cuevas <fjmadrid@uco.es>
@@ -22,12 +22,11 @@ HashTable<K, V, KeyToInt>::HashTable(size_t m,
 {
     assert(m == hash->m());
     //TODO
-    //table_ =
-    curr_ = -1;
-    used_entries_ = m;
     key_to_int_ = key_to_int;
-    hash_ = hash;
-
+     hash_ = hash;
+     table_=std::make_shared<table_t>(m);
+     curr_ = m;
+     used_entries_ = 0;
     //
     assert(!is_valid());
     assert(size()==m);
@@ -49,7 +48,7 @@ HashTable<K, V, KeyToInt>::size() const
 {
     size_t ret_v = 0;
     //TODO
-    ret_v = used_entries_;
+    ret_v = table_->size();
     //
     return ret_v;
 }
@@ -60,7 +59,7 @@ HashTable<K, V, KeyToInt>::load_factor() const
 {
     float ret_v = 0.0f;
     //TODO
-
+    ret_v= (float)used_entries_ / (float)size();
     //
     return ret_v;
 }
@@ -73,8 +72,11 @@ HashTable<K, V, KeyToInt>::has(K const& k) const
     bool ret_v = false;
     //TODO
     // Hint: use the find method but save/restore the state.
-    
-    
+    for(size_t i=0;i<size();i++){
+           if( (*table_)[i].is_valid() && (*table_)[i].get_key()==k){
+             return true;
+           }
+    }
     //
     return ret_v;
 }
@@ -86,7 +88,7 @@ HashTable<K, V, KeyToInt>::is_valid() const
     bool ret_v = false;
     //TODO
     // Remember: check curr_ is in the table range and the table entry is valid.
-
+    ret_v= (curr_ < table_->size()) && ((*table_)[curr_].is_valid());
     //
     return ret_v;
 }
@@ -99,7 +101,7 @@ HashTable<K, V, KeyToInt>::get_key() const
     assert(is_valid());
     K ret_v;
     //TODO
-
+    ret_v = (*table_)[curr_].get_key();
     //
     return ret_v;
 }
@@ -111,7 +113,7 @@ HashTable<K, V, KeyToInt>::get_value() const
     assert(is_valid());
     V ret_v = V();
     //TODO
-
+    ret_v = (*table_)[curr_].get_value();
     //
     return ret_v;
 }
@@ -123,7 +125,15 @@ HashTable<K, V, KeyToInt>::find(K const& k)
     assert(load_factor()<1.0f);
     bool is_found=false;
     //TODO
-
+    int i=0;
+    bool go_out;
+    do{
+        curr_=hash_->operator()(key_to_int_->operator()(k),i);
+        i++;
+        go_out=(*table_)[curr_].is_empty();
+        go_out=go_out || (*table_)[curr_].get_key()==k;
+    }while(!go_out);
+    is_found=(*table_)[curr_].is_valid() && (*table_)[curr_].get_key()==k;
     //
     assert(!is_valid() || get_key()==k);
     return is_found;
@@ -136,8 +146,13 @@ HashTable<K, V, KeyToInt>::insert(K const& k, V const& v)
     assert(load_factor()<1.0f);
 
     //TODO
-    //locate the key.
-
+    //locate the key.  
+    find(k);
+    if((*table_)[curr_].is_empty()){
+        used_entries_++;
+    }
+    (*table_)[curr_].set(k,v);
+    rehash();
     //
     assert(load_factor()<1.0f);
     assert(is_valid());
@@ -155,7 +170,7 @@ HashTable<K, V, KeyToInt>::remove()
 #endif
     //TODO
     //Remember: we are using a mark to sign "deleted".
-
+    (*table_)[curr_].set_deleted();
 
     //
     assert(!is_valid());
@@ -168,7 +183,7 @@ HashTable<K, V, KeyToInt>::set_value(const V& v)
 {
     assert(is_valid());
     //TODO
-
+    (*table_)[curr_].set_value(v);
     //
     assert(get_value()==v);
 }
@@ -185,7 +200,18 @@ HashTable<K, V, KeyToInt>::rehash()
     //Remember: we use a 2 factor to grown the current size.
     //Remember: a new hash function will be picked at from the Universal Family.
     //Hint: use the assign operator = to switch the new table with "this".
+    if (load_factor() > 0.5) {
+        hash_ = hash_->pick_at_new(table_->size() * 2);
+        HashTable<K, V, KeyToInt> newTable(table_->size() * 2, key_to_int_, hash_);
+        goto_begin();
+        while (is_valid()) {
+            newTable.insert(get_key(), get_value());
+            goto_next();
+        }
+        (*this) = newTable;
 
+        find(old_curr_key);
+    }
     //
     assert(load_factor()<=0.5);
     assert(is_valid() && get_key()==old_curr_key);
@@ -198,7 +224,12 @@ HashTable<K, V, KeyToInt>::goto_begin()
     //TODO
     //Remember: move cursor to the first (from position 0) valid entry
     //         if there is.
-
+    for(size_t i=0; i<table_->size();i++){
+        if( !(*table_)[i].is_empty()){
+            curr_=i;
+            return;
+        }
+    }
     //
 }
 
@@ -209,6 +240,9 @@ HashTable<K, V, KeyToInt>::goto_next()
     assert(is_valid());
     //TODO
     //Remember: move cursor to the next valid position if there is.
-
+    curr_++;
+    while(curr_<size() && !(*table_)[curr_].is_valid()){
+        curr_++;
+    }
     //
 }

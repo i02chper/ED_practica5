@@ -18,8 +18,7 @@ template<class K, class V>
 HashTableEntry<K,V>::HashTableEntry()
 {
     //TODO
-    state = 0;
-
+    state=EntryState::EMPTY;
     //
     assert(is_empty());
 }
@@ -28,8 +27,9 @@ template<class K, class V>
 HashTableEntry<K,V>::HashTableEntry(const K& k, const V &v)
 {
     //TODO
-    state = 1;
-    data = (k,v);
+    data.first = k;
+    data.second = v;
+    state = EntryState::VALID;
     //
     assert(is_valid());
     assert(get_key()==k);
@@ -41,10 +41,7 @@ bool HashTableEntry<K,V>::is_valid() const
 {
     bool ret_val = false;
     //TODO
-    if(this->state == 1)
-    {
-        ret_val = true;
-    }
+    (state == EntryState::VALID) ? (ret_val=true) : (ret_val=false);
     //
     return ret_val;
 }
@@ -54,10 +51,7 @@ bool HashTableEntry<K,V>::is_empty() const
 {
     bool ret_val = false;
     //TODO
-    if(this->state == 0)
-    {
-        ret_val = true;
-    }
+    (state == EntryState::EMPTY) ? (ret_val=true) : (ret_val=false);
     //
     return ret_val;
 }
@@ -67,10 +61,7 @@ bool HashTableEntry<K,V>::is_deleted() const
 {
     bool ret_val = false;
     //TODO
-    if(this->state == 2)
-    {
-        ret_val = true;
-    }
+    (state == EntryState::DELETED) ? (ret_val=true) : (ret_val=false);
     //
     return ret_val;
 }
@@ -82,7 +73,7 @@ HashTableEntry<K,V>::get_key() const
     assert(!is_empty());
     K ret_val;
     //TODO
-    ret_val = data.get();
+    ret_val = data.first;
     //
     return ret_val;
 }
@@ -94,7 +85,7 @@ HashTableEntry<K,V>::get_value() const
     assert(!is_empty());
     V ret_val;
     //TODO
-    ret_val = data.get();
+    ret_val = data.second;
     //
     return ret_val;
 }
@@ -104,7 +95,9 @@ void
 HashTableEntry<K,V>::set(const K& k, const V& v)
 {
     //TODO
-    data = (k,v);
+    data.first = k;
+    data.second = v;
+    state = EntryState::VALID;
     //
     assert(is_valid());
     assert(get_key()==k);
@@ -120,7 +113,8 @@ HashTableEntry<K,V>::set_value(const V& v)
     K old_key = get_key();
 #endif
     //TODO
-    data = (old_key,v);
+    data.second = v;
+    state = EntryState::VALID;
     //
     assert(is_valid());
     assert(get_value()==v);
@@ -133,7 +127,7 @@ HashTableEntry<K,V>::set_deleted()
 {
     assert(is_valid());
     //TODO
-    this->state=2;
+    state = EntryState::DELETED;
     //
     assert(is_deleted());
 }

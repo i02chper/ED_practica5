@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 9.0.1, 2023-05-12T19:06:50. -->
+<!-- Written by QtCreator 9.0.1, 2023-05-12T22:18:56. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -384,6 +384,8 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test_dos_detector</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test_dos_detector</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">test_dos_detector</value>
+    <value type="QString" key="RunConfiguration.Arguments">/home/rachape99/Escritorio/ED_practica5/dos_detector-open_addressing_2.0/dos_detector-open_addressing/tests_dos_detector/00</value>
+    <value type="bool" key="RunConfiguration.Arguments.multi">true</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>

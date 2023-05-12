@@ -23,12 +23,13 @@ update_counters(Log& log, size_t &i, size_t& j,
                 int max_acc)
 {
 
-    // First: Updating (incrementing i) the new remote connections.
+
+    // First: Updating (incrementing i) the new remote conections.
     // You can use System() to do the os operations.
     // i.e.: System().time() to get the current time ("now").
     //       System().is_banned() to know if a ip is banned at current time.
     //       System().ban_ip() to ban an ip.
-    // Remember: in this simulated case var 'i' can achieve log.size() value.
+    // Remenber: in this simulated case var 'i' can achieve log.size() value.
     while(i < log.size() && log[i].time < System().time())
     {
         if (System().is_banned(log[i].ip))
@@ -42,23 +43,25 @@ update_counters(Log& log, size_t &i, size_t& j,
         }
         else
         {
-            //TODO
+            //TODO:
             //Update the counter associated to the ip. If it does not exist,
             //create a new counter for it.
-            //Remember: if the updated counter is great or equal than max_acc
+            //Remenber: if the udpated counter is great or equal than max_acc
             //          the ip must be banned for 60 seconds.
-            if(counters.find(log[i].ip)){
-                        int new_value=counters.get_value();
-                        new_value++;
-                        counters.set_value(new_value);
-                        if(max_acc<=new_value){
-                            System().ban_ip(log[i].ip, 60);
-                        }
-                    }
-                    else if(!counters.find(log[i].ip)){
-                        auto new_key=log[i].ip;
-                        counters.insert(new_key,1);
-                    }
+            if (counters.find(log[i].ip)) //Primero vemos si la encontramos
+            {
+                int new_value = counters.get_value();
+                new_value++;
+                counters.set_value(new_value);      //Seteamos el valor nuevo
+                if (max_acc <= new_value)           //Entramos para banear la ip
+                System().ban_ip(log[i].ip, 60); //Baneamos la ip
+            }
+
+            else if (!counters.find(log[i].ip)) //Si no la encontramos, la insertamos
+            {
+                auto new_key = log[i].ip;    //Creamos la clave que vamos a insertar
+                counters.insert(new_key, 1); //Insertamos la nueva clave y el valor 1
+            }
 
             //
         }
@@ -72,24 +75,25 @@ update_counters(Log& log, size_t &i, size_t& j,
     {
         if (! (log[j].ip == IP(0,0,0,0)) )
         {
-            //TODO
+            //TODO:
             //Decrementing the counter associated to the ip by one.
             //Hint: Two things must be true here.
             // - We can find the ip in the table and
             // - its counter must be >0 before decrementing.
             //You should check these things to make sure you are doing
             //   well the work.
-            if(counters.find(log[j].ip)){
-                        int value=counters.get_value();
-                        value--;
-                        counters.set_value(value);
-                    }
-
+            if (counters.find(log[j].ip))
+            {
+                int value = counters.get_value(); //Creamos el valor que vamos a setear
+                value--;
+                counters.set_value(value); //Seteamos el valor
+            }
             //
         }
         ++j;
     }
 }
+
 
 
 void dos_detector(Log& log, int max_acc, size_t m)

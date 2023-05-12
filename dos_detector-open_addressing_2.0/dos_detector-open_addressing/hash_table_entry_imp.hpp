@@ -41,7 +41,9 @@ bool HashTableEntry<K,V>::is_valid() const
 {
     bool ret_val = false;
     //TODO
-    (state == EntryState::VALID) ? (ret_val=true) : (ret_val=false);
+    if(state == EntryState::VALID){
+        ret_val=true;
+    }
     //
     return ret_val;
 }

@@ -25,7 +25,7 @@ HashTable<K, V, KeyToInt>::HashTable(size_t m,
     key_to_int_ = key_to_int;
      hash_ = hash;
      table_=std::make_shared<table_t>(m);
-     curr_ = m;
+     curr_ = 0;
      used_entries_ = 0;
     //
     assert(!is_valid());
